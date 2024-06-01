@@ -15,14 +15,16 @@ class CurrencyConverter {
         try {
             const response = await fetch(`${this.apiUrl}/currencies`);
             const data = await response.json();
-            for (let [code, name] of Object.entries(data)) {
+            
+            Object.entries(data).forEach(([code, name]) => {
                 this.currencies.push(new Currency(code, name));
-            }
+            });
         } catch (error) {
             console.error('ERROR', error);
             throw error;
         }
     }
+    
 
     async convertCurrency(amount, fromCurrency, toCurrency) {
         try {

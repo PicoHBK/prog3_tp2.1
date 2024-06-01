@@ -31,6 +31,19 @@ class Card {
         const cardElement = this.element.querySelector(".card");
         cardElement.classList.remove("flipped");
     }
+
+    toggleFlip(){
+        if (this.isFlipped) {
+            this.#unflip();
+            this.isFlipped = false;
+        } else {
+            this.#flip();
+            this.isFlipped = true;
+        }
+    }
+    matches(otherCard){
+        return this.name === otherCard.name;
+    }
 }
 
 class Board {
@@ -56,6 +69,28 @@ class Board {
     #setGridColumns() {
         const columns = this.#calculateColumns();
         this.fixedGridElement.className = `fixed-grid has-${columns}-cols`;
+    }
+
+    shuffleCards() {
+        this.cards.sort(() => Math.random() - 0.5);
+        console.log(this.cards)
+    }
+
+    reset(){
+        this.#calculateColumns()
+        this.#setGridColumns()
+        this.shuffleCards()
+        this.flipDownAllCard(); 
+
+    }
+
+    flipDownAllCard(){
+        this.cards.forEach((card) => {
+            card.isFlipped = true;
+            card.toggleFlip();
+        });
+        this.flippedCards = [];
+        this.matchedCards = [];
     }
 
     render() {
@@ -92,6 +127,31 @@ class MemoryGame {
         this.board.reset();
     }
 
+    checkForMatch(){
+        if (this.flippedCards[0].matches(this.flippedCards[1])) {
+            this.matchedCards.push(this.flippedCards[0]);
+            this.matchedCards.push(this.flippedCards[1]);
+            this.flippedCards = [];
+            if (this.matchedCards.length === this.board.cards.length) {
+                this.board.flipDownAllCard();
+                alert("GANASTE");
+                this.resetGame();
+            }
+        } else {
+            this.flippedCards[0].toggleFlip();
+            this.flippedCards[1].toggleFlip();
+            this.flippedCards = [];
+        }
+    }
+
+    resetGame(){
+        this.board.reset();
+        this.board.render();
+        this.flippedCards = [];
+        this.matchedCards = [];
+
+    }
+
     #handleCardClick(card) {
         if (this.flippedCards.length < 2 && !card.isFlipped) {
             card.toggleFlip();
@@ -120,6 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ]);
     const board = new Board(cards);
     const memoryGame = new MemoryGame(board, 1000);
+    board.render(memoryGame);
 
     document.getElementById("restart-button").addEventListener("click", () => {
         memoryGame.resetGame();
