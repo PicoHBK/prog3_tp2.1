@@ -6,11 +6,35 @@ class Currency {
 }
 
 class CurrencyConverter {
-    constructor() {}
+    constructor(apiUrl, currency ) {
+        this.apiUrl = apiUrl;
+        this.currencies = [];
+    }
 
-    getCurrencies(apiUrl) {}
+    async getCurrencies() {
+        try {
+            const response = await fetch(`${this.apiUrl}/currencies`);
+            const data = await response.json();
+            for (let [code, name] of Object.entries(data)) {
+                this.currencies.push(new Currency(code, name));
+            }
+        } catch (error) {
+            console.error('ERROR', error);
+            throw error;
+        }
+    }
 
-    convertCurrency(amount, fromCurrency, toCurrency) {}
+    async convertCurrency(amount, fromCurrency, toCurrency) {
+        try {
+            const response = await fetch(`${this.apiUrl}/latest?amount=${amount}&from=${fromCurrency.code}&to=${toCurrency.code}`)
+            const data = await response.json();
+            console.log(data);
+            return data.rates[toCurrency.code];
+        }catch (error) {
+            console.error('ERROR', error);
+
+        }
+    }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -21,7 +45,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const converter = new CurrencyConverter("https://api.frankfurter.app");
 
-    await converter.getCurrencies();
+    await converter.getCurrencies()
+    console.log(converter.currencies);
     populateCurrencies(fromCurrencySelect, converter.currencies);
     populateCurrencies(toCurrencySelect, converter.currencies);
 
